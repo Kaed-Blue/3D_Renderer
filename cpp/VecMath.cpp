@@ -158,7 +158,8 @@ void VecMath::RotationZ(mat4x4 &mat, const float angel)
 }
 
 bool VecMath::PlainIntersect(const vec3d &pointOnPlain, const vec3d &normal,
-                             const vec3d &lineStart, const vec3d &lineEnd, vec3d &output)
+                             const vec3d &lineStart, const vec3d &lineEnd,
+                             vec3d &output, float *intersectionPram) // TODO: find better name for t
 {
   // definition of a plain -> n.p + d = 0 // "." stands for dotproduct
   float plainOffset = -VecMath::DotProduct(normal, pointOnPlain); // d*n = p's transformation to n (it's shadow)
@@ -176,10 +177,12 @@ bool VecMath::PlainIntersect(const vec3d &pointOnPlain, const vec3d &normal,
     vec3d line = lineEnd - lineStart;
     vec3d lineToIntersect = VecMath::ScaleVector(line, t);
     output = lineStart + lineToIntersect;
+    intersectionPram = &t;
     return true;
   }
-  else {return false;}
-    
+  else
+    return false;
+
   // BUG: no checks for parallel
 }
 

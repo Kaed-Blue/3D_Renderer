@@ -1,8 +1,9 @@
 #pragma once
-#include <SDL3/SDL.h>
 
 class Renderer;
 class Camera;
+class SDL_Window;
+class SDL_Renderer;
 
 class Engine
 {

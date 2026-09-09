@@ -7,4 +7,5 @@ add_executable(main ${SOURCE_FILES})
 
 find_package(SDL3 REQUIRED)
 target_link_libraries(main PRIVATE SDL3::SDL3)
-target_include_directories(main PRIVATE h)
+target_include_directories(main PRIVATE h external)
+# target_include_directories(main PRIVATE external)

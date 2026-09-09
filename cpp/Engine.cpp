@@ -4,6 +4,11 @@
 #include "Mesh.h"
 #include "VecMath.h"
 #include "Ilumination.h"
+#include <SDL3/SDL.h>
+#include <string>
+
+#include "Debug.h"
+#include "Profiler.h"
 
 float Engine::GetAspectRatio(SDL_Window *window)
 {
@@ -34,6 +39,7 @@ void Engine::run()
   Mesh cube;
   // cube.CreateCube();
   cube.LoadFromObj("../Obj/utah_teapot.obj");
+  cube.LoadTexture(sdlRenderer, "../texture/white.jpg");
 
   const float DEG2RAD = M_PI / 180.0f;
   Uint64 lastCounter = SDL_GetPerformanceCounter();
@@ -41,7 +47,7 @@ void Engine::run()
   bool running = true;
   while (running)
   {
-
+    // ScopeTimer timer("Frame time");
     // Get elapsed time since last frame
     Uint64 currentCounter = SDL_GetPerformanceCounter(); // TODO: go find how this works
     float elapsedTime = (float)(currentCounter - lastCounter) / SDL_GetPerformanceFrequency();
@@ -70,10 +76,10 @@ void Engine::run()
 
     Ecamera->UpdateViewMatrix();
 
-    static vec3d angels;
-    angels.x += 40 * elapsedTime * DEG2RAD;
-    angels.y += 20 * elapsedTime * DEG2RAD;
-    angels.z += 10 * elapsedTime * DEG2RAD;
+    static vec3d continuousRot;
+    continuousRot.x += 40 * elapsedTime * DEG2RAD;
+    continuousRot.y += 20 * elapsedTime * DEG2RAD;
+    continuousRot.z += 10 * elapsedTime * DEG2RAD;
 
     std::vector<Ilumination> iluminations;
     Ilumination ilumination1;
@@ -81,7 +87,7 @@ void Engine::run()
     iluminations.push_back(ilumination1);
 
     Erenderer->DrawMesh(cube, {0, 0, 0}, *Ecamera, {0, 0, 20}, iluminations);
-    // Erenderer->DrawGrid3D(*Ecamera);
+    // Debug::DrawGrid3D(*Erenderer, *Ecamera);
 
     SDL_RenderPresent(sdlRenderer);
   }

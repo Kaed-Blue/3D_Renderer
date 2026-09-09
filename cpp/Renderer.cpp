@@ -101,7 +101,7 @@ mat4x4 Renderer::MakeWorldMat(const vec3d &objPos, const vec3d &angels)
 {
   mat4x4 Translation = VecMath::TranslateMatrix(objPos.x, objPos.y, objPos.z);
   mat4x4 rots = this->GetRotaionMatrix(angels);
-  return Translation * rots;
+  return rots * Translation;
 }
 
 triangle Renderer::TransformTriangle(const triangle &tri, const mat4x4 &mat)
@@ -110,6 +110,7 @@ triangle Renderer::TransformTriangle(const triangle &tri, const mat4x4 &mat)
   for (int i = 0; i < 3; i++)
   {
     transformed.p[i] = VecMath::MultiplyMatrixVector(tri.p[i], mat);
+    transformed.t[i] = tri.t[i];
   }
   return transformed;
 }
@@ -160,8 +161,8 @@ void Renderer::DrawMesh(const Mesh &mesh, const vec3d &angels, const Camera &cam
       NdcToPixels(triProjected);
 
       // Lighting
-      triProjected.p->color = iluminations.at(0).ShadowValue(info.normal); // TODO: Add color merge
-
+      triProjected.p->color = {1, 1, 1, 1}; // TODO: Add color merge
+                                            // iluminations.at(0).ShadowValue(info.normal)
       // Store projected tris
       vectriprojeted.push_back(triProjected);
     }
@@ -176,10 +177,10 @@ void Renderer::DrawMesh(const Mesh &mesh, const vec3d &angels, const Camera &cam
          return z1Avg > z2Avg;
        });
 
-  this->Rasterize(vectriprojeted); // 3%
+  this->Rasterize(vectriprojeted, mesh.texture); // 9%
 }
 
-void Renderer::Rasterize(const std::vector<triangle> &triangles)
+void Renderer::Rasterize(const std::vector<triangle> &triangles, SDL_Texture *texture)
 {
   // ScopeTimer ti("raster");
   // Assigning to SDL_Vertex so it can be drawn by RenderGeometry
@@ -188,14 +189,19 @@ void Renderer::Rasterize(const std::vector<triangle> &triangles)
 
     SDL_Vertex vertex[3];
     vertex[0].position = {tri.p[0].x, h - tri.p[0].y}; // SDL is y down
+    vertex[0].tex_coord = {tri.t[0].u, tri.t[0].v};
     vertex[0].color = tri.p->color;
+
     vertex[1].position = {tri.p[1].x, h - tri.p[1].y};
+    vertex[1].tex_coord = {tri.t[1].u, tri.t[1].v};
     vertex[1].color = tri.p->color;
+
     vertex[2].position = {tri.p[2].x, h - tri.p[2].y};
+    vertex[2].tex_coord = {tri.t[2].u, tri.t[2].v};
     vertex[2].color = tri.p->color;
 
     // Drawing
-    SDL_RenderGeometry(sdlrenderer, NULL, vertex, 3, NULL, 0); // TODO: give all the triangels at once also use RenderGeometryRaw
+    SDL_RenderGeometry(sdlrenderer, texture, vertex, 3, NULL, 0); // TODO: give all the triangels at once also use RenderGeometryRaw
 
     // DrawTriangle(sdlrenderer,
     //              tri.p[0].x,

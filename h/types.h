@@ -1,6 +1,11 @@
 #pragma once
 #include <SDL3/SDL.h>
 
+struct vec2d
+{
+  float u, v;
+};
+
 struct vec3d
 {
   float x = 0, y = 0, z = 0;
@@ -17,6 +22,8 @@ struct vec3d
 struct triangle
 {
   vec3d p[3];
+  vec2d t[3];
+  vec3d n[3];
 };
 
 struct mat4x4

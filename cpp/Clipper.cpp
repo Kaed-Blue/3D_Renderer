@@ -3,6 +3,7 @@
 #include <math.h>
 #include <array>
 #include "profiler.h"
+#include <assert.h>
 
 Clipper::Clipper(float vFOV, float aspectRatio, float nearPlain, float farPlain)
 {
@@ -33,38 +34,62 @@ int Clipper::ClipAgainstPlain(const Plain &plain, const triangle &inTri, triangl
   int insideCount = 0;
   vec3d outside[3];
   int outsideCount = 0;
+  vec2d inTexCoord[3];
+  vec2d outTexCoord[3];
 
   for (int i = 0; i < 3; i++)
   {
     float pdistance = VecMath::DotProduct(plain.normal, inTri.p[i]);
     if (plain.offset >= -pdistance) // plain normal is pointing inside
     {
+      inTexCoord[insideCount] = inTri.t[i];
       inside[insideCount++] = inTri.p[i];
     }
     else
     {
+      outTexCoord[outsideCount] = inTri.t[i];
       outside[outsideCount++] = inTri.p[i];
     }
   }
 
-  vec3d intersection[3];
+  float t;
   switch (insideCount)
   {
   case 0:
     return 0;
 
   case 1:
-    VecMath::PlainIntersect(plain.pointOnPlain, plain.normal, inside[0], outside[0], intersection[0]);
-    VecMath::PlainIntersect(plain.pointOnPlain, plain.normal, inside[0], outside[1], intersection[1]);
-    outTri1 = {inside[0], intersection[0], intersection[1]};
+    outTri1.p[0] = inside[0];
+    outTri1.t[0] = inTexCoord[0];
+
+    VecMath::PlainIntersect(plain.pointOnPlain, plain.normal, inside[0], outside[0], outTri1.p[1], &t);
+    outTri1.t[1].u = t * (inTexCoord[0].u - outTexCoord[0].u) + outTexCoord[0].u;
+    outTri1.t[1].v = t * (inTexCoord[0].v - outTexCoord[0].v) + outTexCoord[0].v;
+
+    VecMath::PlainIntersect(plain.pointOnPlain, plain.normal, inside[0], outside[1], outTri1.p[2], &t);
+    outTri1.t[2].u = t * (inTexCoord[0].u - outTexCoord[1].u) + outTexCoord[1].u;
+    outTri1.t[2].v = t * (inTexCoord[0].v - outTexCoord[1].v) + outTexCoord[1].v;
     return 1;
 
   case 2:
-    VecMath::PlainIntersect(plain.pointOnPlain, plain.normal, inside[0], outside[0], intersection[0]);
-    VecMath::PlainIntersect(plain.pointOnPlain, plain.normal, inside[1], outside[0], intersection[1]);
+    outTri1.p[0] = inside[0];
+    outTri1.p[1] = inside[1];
+    outTri1.t[0] = inTexCoord[0];
+    outTri1.t[1] = inTexCoord[1];
+    outTri2.p[0] = inside[1];
+    outTri2.t[0] = inTexCoord[1];
 
-    outTri1 = {inside[0], inside[1], intersection[0]};
-    outTri2 = {inside[1], intersection[0], intersection[1]};
+    VecMath::PlainIntersect(plain.pointOnPlain, plain.normal, inside[0], outside[0], outTri1.p[2], &t);
+    outTri1.t[2].u = t * (inTexCoord[0].u - outTexCoord[0].u) + outTexCoord[0].u;
+    outTri1.t[2].v = t * (inTexCoord[0].v - outTexCoord[0].v) + outTexCoord[0].v;
+
+    outTri2.p[1] = outTri1.p[2];
+    outTri2.t[1].u = t * (inTexCoord[0].u - outTexCoord[0].u) + outTexCoord[0].u;
+    outTri2.t[1].v = t * (inTexCoord[0].v - outTexCoord[0].v) + outTexCoord[0].v;
+
+    VecMath::PlainIntersect(plain.pointOnPlain, plain.normal, inside[1], outside[0], outTri2.p[2], &t);
+    outTri2.t[2].u = t * (inTexCoord[1].u - outTexCoord[0].u) + outTexCoord[0].u;
+    outTri2.t[2].v = t * (inTexCoord[1].v - outTexCoord[0].v) + outTexCoord[0].v;
     return 2;
 
   case 3:
@@ -72,7 +97,8 @@ int Clipper::ClipAgainstPlain(const Plain &plain, const triangle &inTri, triangl
     return 1;
 
   default:
-    throw;
+    assert(false);
+    return -1;
   }
 }
 

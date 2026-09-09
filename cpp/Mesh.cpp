@@ -1,5 +1,7 @@
 #include "Mesh.h"
 #include <fstream>
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
 
 void
 Mesh::CreateCube()
@@ -35,46 +37,83 @@ Mesh::CreateCube()
 void Mesh::LoadFromObj(std::string fileName)
 {
   std::ifstream obj(fileName);
-  if (obj)
-  {
-    std::vector<vec3d> verts;
-    std::string line;
 
-    while (std::getline(obj, line))
-    {
-      if (line.empty())
-      {
-        continue;
-      }
-
-      std::stringstream s(line);
-      std::string type;
-
-      s >> type;
-
-      if (type == "v")
-      {
-        float x, y, z;
-        if (s >> x >> y >> z)
-        {
-          verts.push_back({x, y, z});
-        }
-      }
-
-      else if (type == "f")
-      {
-        std::string a, b, c;
-
-        if (s >> a >> b >> c)
-        {
-          tris.push_back({verts[ParseFace(a, '/').vertexNum - 1], verts[ParseFace(b, '/').vertexNum - 1], verts[ParseFace(c, '/').vertexNum - 1]});
-        }
-      }
-    }
-  }
-  else
+  if (!obj)
   {
     std::cerr << "Error code: " << strerror(errno);
+    return;
+  }
+
+  std::vector<vec3d> verts, normals;
+  std::vector<vec2d> textures;
+  std::string line;
+
+  while (std::getline(obj, line))
+  {
+    if (line.empty())
+    {
+      continue;
+    }
+
+    std::stringstream s(line);
+    std::string type;
+
+    s >> type;
+
+    if (type == "v")
+    {
+      float x, y, z;
+      if (s >> x >> y >> z)
+      {
+        verts.push_back({x, y, z});
+      }
+    }
+
+    else if (type == "vt")
+    {
+      float u, v;
+      if (s >> u >> v)
+      {
+        textures.push_back({u, v});
+      }
+    }
+
+    else if (type == "vn")
+    {
+      float x, y, z;
+      if (s >> x >> y >> z)
+      {
+        normals.push_back({x, y, z});
+      }
+    }
+
+    else if (type == "f")
+    {
+      std::string a, b, c;
+
+      if (s >> a >> b >> c)
+      {
+        FaceValue pointA = ParseFace(a, '/');
+        FaceValue PointB = ParseFace(b, '/');
+        FaceValue PointC = ParseFace(c, '/');
+
+        this->tris.push_back(
+
+            {
+                {verts[pointA.vertexNum - 1],
+                 verts[PointB.vertexNum - 1],
+                 verts[PointC.vertexNum - 1]},
+
+                {textures[pointA.texcoord - 1],
+                 textures[PointB.texcoord - 1],
+                 textures[PointC.texcoord - 1]},
+
+                //  {normals[pointA.normal - 1],
+                //   normals[PointB.normal - 1],
+                // normals[PointC.normal - 1]}
+            });
+      }
+    }
   }
 }
 
@@ -84,14 +123,36 @@ FaceValue Mesh::ParseFace(std::string word, char delimiter)
   std::string token;
   std::stringstream ss(word);
 
-  std::getline(ss, token, delimiter);
-  faceValue.vertexNum = std::stoi(token);
+  if (std::getline(ss, token, delimiter) && !token.empty())
+    faceValue.vertexNum = std::stoi(token);
 
-  std::getline(ss, token, delimiter);
-  faceValue.texcoord = std::stoi(token);
+  if (std::getline(ss, token, delimiter) && !token.empty())
+    faceValue.texcoord = std::stoi(token);
 
-  std::getline(ss, token, delimiter);
-  faceValue.normal = std::stoi(token);
+  if (std::getline(ss, token, delimiter) && !token.empty())
+    faceValue.normal = std::stoi(token);
 
   return faceValue;
+}
+
+void Mesh::LoadTexture(SDL_Renderer *renderer, const std::string &filePath)
+{
+  int width = 0;
+  int height = 0;
+  int channels = 0;
+  stbi_uc *pixelData = stbi_load(filePath.c_str(), &width, &height, &channels, 4);
+
+  if (!pixelData)
+  {
+    assert(false);
+  }
+
+  // width * 4 -> bytes of data for each row
+  SDL_Surface *surface = SDL_CreateSurfaceFrom(width, height, SDL_PIXELFORMAT_RGBA32, pixelData, width * 4);
+  SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, surface);
+
+  SDL_DestroySurface(surface);
+  stbi_image_free(pixelData);
+
+  this->texture = texture; // you should sdl_destroy texture when you're done or memory leak
 }

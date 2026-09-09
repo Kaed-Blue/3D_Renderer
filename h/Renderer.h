@@ -53,5 +53,5 @@ public:
 
   void DrawMesh(const Mesh &mesh, const vec3d &angels, const Camera &camera, const vec3d &objPos, const std::vector<Ilumination> &iluminations);
 
-  void Rasterize(const std::vector<triangle> &triangles);
+  void Rasterize(const std::vector<triangle> &triangles, SDL_Texture *texture);
 };

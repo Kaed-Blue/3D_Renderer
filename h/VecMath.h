@@ -25,5 +25,5 @@ namespace VecMath
   void RotationY(mat4x4 &mat, const float theta);
   void RotationZ(mat4x4 &mat, const float theta);
 
-  bool PlainIntersect(const vec3d &pointOnPlain, const vec3d &normal, const vec3d &lineStart, const vec3d &lineEnd, vec3d &output);
+  bool PlainIntersect(const vec3d &pointOnPlain, const vec3d &normal, const vec3d &lineStart, const vec3d &lineEnd, vec3d &output, float *intersectionPram = nullptr);
 };
