@@ -8,9 +8,9 @@
 
 struct FaceValue
 {
-  int vertexNum;
-  int texcoord;
-  int normal;
+  int vertexIndex;
+  int texcoordIndex;
+  int normalIndex;
 };
 
 class Mesh

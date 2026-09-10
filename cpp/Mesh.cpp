@@ -89,29 +89,39 @@ void Mesh::LoadFromObj(std::string fileName)
 
     else if (type == "f")
     {
-      std::string a, b, c;
+      std::string a, b, c, d;
+      FaceValue pointIndexes[4];
 
       if (s >> a >> b >> c)
       {
-        FaceValue pointA = ParseFace(a, '/');
-        FaceValue PointB = ParseFace(b, '/');
-        FaceValue PointC = ParseFace(c, '/');
+        pointIndexes[0] = ParseFace(a, '/');
+        pointIndexes[1] = ParseFace(b, '/');
+        pointIndexes[2] = ParseFace(c, '/');
 
-        this->tris.push_back(
+        int tricount = 1;
+        if (s >> d)
+        {
+          pointIndexes[3] = ParseFace(d, '/');
+          tricount++;
+        }
 
-            {
-                {verts[pointA.vertexNum - 1],
-                 verts[PointB.vertexNum - 1],
-                 verts[PointC.vertexNum - 1]},
+        for (int i = 0; i < tricount; i++)
+        {
 
-                {textures[pointA.texcoord - 1],
-                 textures[PointB.texcoord - 1],
-                 textures[PointC.texcoord - 1]},
+          this->tris.push_back( // TODO: add boundery check
 
-                //  {normals[pointA.normal - 1],
-                //   normals[PointB.normal - 1],
-                // normals[PointC.normal - 1]}
-            });
+              {{verts[pointIndexes[0].vertexIndex - 1],
+                verts[pointIndexes[i + 1].vertexIndex - 1],
+                verts[pointIndexes[i + 2].vertexIndex - 1]},
+
+               {textures[pointIndexes[0].texcoordIndex - 1],
+                textures[pointIndexes[i + 1].texcoordIndex - 1],
+                textures[pointIndexes[i + 2].texcoordIndex - 1]},
+
+               {normals[pointIndexes[0].normalIndex - 1],
+                normals[pointIndexes[i + 1].normalIndex - 1],
+                normals[pointIndexes[i + 2].normalIndex - 1]}});
+        }
       }
     }
   }
@@ -124,13 +134,13 @@ FaceValue Mesh::ParseFace(std::string word, char delimiter)
   std::stringstream ss(word);
 
   if (std::getline(ss, token, delimiter) && !token.empty())
-    faceValue.vertexNum = std::stoi(token);
+    faceValue.vertexIndex = std::stoi(token);
 
   if (std::getline(ss, token, delimiter) && !token.empty())
-    faceValue.texcoord = std::stoi(token);
+    faceValue.texcoordIndex = std::stoi(token);
 
   if (std::getline(ss, token, delimiter) && !token.empty())
-    faceValue.normal = std::stoi(token);
+    faceValue.normalIndex = std::stoi(token);
 
   return faceValue;
 }

@@ -38,8 +38,8 @@ void Engine::run()
   // Load Objects
   Mesh cube;
   // cube.CreateCube();
-  cube.LoadFromObj("../Obj/utah_teapot.obj");
-  cube.LoadTexture(sdlRenderer, "../texture/white.jpg");
+  cube.LoadFromObj("../Obj/E 45 Aircraft_obj.obj");
+  cube.LoadTexture(sdlRenderer, "../texture/E-45 _col.jpg");
 
   const float DEG2RAD = M_PI / 180.0f;
   Uint64 lastCounter = SDL_GetPerformanceCounter();
@@ -49,7 +49,7 @@ void Engine::run()
   {
     // ScopeTimer timer("Frame time");
     // Get elapsed time since last frame
-    Uint64 currentCounter = SDL_GetPerformanceCounter(); // TODO: go find how this works
+    Uint64 currentCounter = SDL_GetPerformanceCounter();
     float elapsedTime = (float)(currentCounter - lastCounter) / SDL_GetPerformanceFrequency();
     lastCounter = currentCounter;
 
