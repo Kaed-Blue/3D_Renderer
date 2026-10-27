@@ -161,8 +161,16 @@ void Renderer::DrawMesh(const Mesh &mesh, const vec3d &angels, const Camera &cam
       NdcToPixels(triProjected);
 
       // Lighting
-      triProjected.p->color = {1, 1, 1, 1}; // TODO: Add color merge
-                                            // iluminations.at(0).ShadowValue(info.normal)
+      for (int i = 0; i < iluminations.size(); i++)
+      {
+        SDL_FColor shadow_value = iluminations.at(i).ShadowValue(info.normal);
+        triProjected.p->color.a += shadow_value.a;
+        triProjected.p->color.r += shadow_value.r;
+        triProjected.p->color.g += shadow_value.g;
+        triProjected.p->color.b += shadow_value.b;
+      }
+      // triProjected.p->color = {1, 1, 1, 1};
+
       // Store projected tris
       vectriprojeted.push_back(triProjected);
     }
@@ -201,7 +209,7 @@ void Renderer::Rasterize(const std::vector<triangle> &triangles, SDL_Texture *te
     vertex[2].color = tri.p->color;
 
     // Drawing
-    SDL_RenderGeometry(sdlrenderer, texture, vertex, 3, NULL, 0); // TODO: give all the triangels at once also use RenderGeometryRaw
+    SDL_RenderGeometry(sdlrenderer, NULL, vertex, 3, NULL, 0); // TODO: give all the triangels at once also use RenderGeometryRaw
 
     // DrawTriangle(sdlrenderer,
     //              tri.p[0].x,
