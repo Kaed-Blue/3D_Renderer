@@ -154,7 +154,8 @@ void Mesh::LoadTexture(SDL_Renderer *renderer, const std::string &filePath)
 
   if (!pixelData)
   {
-    assert(false);
+    std::cerr << "Mesh::LoadTexture" << "Error code: " << strerror(errno);
+    return;
   }
 
   // width * 4 -> bytes of data for each row

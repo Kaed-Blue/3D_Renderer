@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.24)
-project(perspectiveProjection)
+project(3D_Renderer)
 
 set(SOURCE_FILES cpp/main.cpp cpp/Engine.cpp cpp/Mesh.cpp cpp/Renderer.cpp cpp/Camera.cpp cpp/Ilumination.cpp cpp/VecMath.cpp cpp/types.cpp cpp/Clipper.cpp cpp/Debug.cpp)
 

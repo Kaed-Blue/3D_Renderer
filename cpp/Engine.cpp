@@ -38,8 +38,8 @@ void Engine::run()
   // Load Objects
   Mesh cube;
   // cube.CreateCube();
-  cube.LoadFromObj("../Obj/E 45 Aircraft_obj.obj");
-  cube.LoadTexture(sdlRenderer, "../texture/E-45 _col.jpg");
+  cube.LoadFromObj("../Obj/utah_teapot.obj");
+  // cube.LoadTexture(sdlRenderer, "../texture/car_jeep_ren.jpg");
 
   const float DEG2RAD = M_PI / 180.0f;
   Uint64 lastCounter = SDL_GetPerformanceCounter();
@@ -77,16 +77,18 @@ void Engine::run()
     Ecamera->UpdateViewMatrix();
 
     static vec3d continuousRot;
-    continuousRot.x += 40 * elapsedTime * DEG2RAD;
-    continuousRot.y += 20 * elapsedTime * DEG2RAD;
-    continuousRot.z += 10 * elapsedTime * DEG2RAD;
+    continuousRot.x += 0 * elapsedTime * DEG2RAD;
+    continuousRot.y += 30 * elapsedTime * DEG2RAD;
+    continuousRot.z += 0 * elapsedTime * DEG2RAD;
 
     std::vector<Ilumination> iluminations;
-    Ilumination ilumination1;
-    ilumination1.SetLightDir({0, 0, 1});
+    Ilumination ilumination1, ilumination2;
+    ilumination1.SetLightDir({-0.0f, -0.0f, 1.0f});
+    ilumination2.SetLightDir({0.0f, 0.0f, -0.5f});
     iluminations.push_back(ilumination1);
+    iluminations.push_back(ilumination2);
 
-    Erenderer->DrawMesh(cube, {0, 0, 0}, *Ecamera, {0, 0, 20}, iluminations);
+    Erenderer->DrawMesh(cube, continuousRot, *Ecamera, {0, 0, 20}, iluminations);
     // Debug::DrawGrid3D(*Erenderer, *Ecamera);
 
     SDL_RenderPresent(sdlRenderer);
